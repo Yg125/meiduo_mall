@@ -28,6 +28,10 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+import sys
+
+sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
+# print(sys.path)  # 导包路径    要从sys.path中导入应用
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -119,9 +124,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-Hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -135,7 +140,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 # 配置静态文件资源存储位置的(绝对路径)
 STATICFILES_DIRS = [
-     os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, 'static')
 ]
 
 # Default primary key field type
