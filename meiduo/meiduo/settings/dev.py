@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'users',
 ]
 
+# 设置自定义的认证模型类
+AUTH_USER_MODEL = 'users.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
