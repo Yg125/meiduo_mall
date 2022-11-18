@@ -1,6 +1,6 @@
 import re
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
 
 # Create your views here.
@@ -39,3 +39,14 @@ class Register(View):
         User.objects.create(username=username, password=pwd, mobile=phone)
         # 4. 返回响应
         return redirect('http://www.taobao.com')
+
+
+# 2, 判断用户名是否存在
+class CheckUsernameView(View):
+    def get(self, request, username):
+
+        # 1, 根据用户名查询用户数量
+        count = User.objects.filter(username=username).count()
+
+        # 2, 返回响应
+        return JsonResponse({"count": count, "code": 0})
