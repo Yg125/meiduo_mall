@@ -1,5 +1,6 @@
 import re
 
+from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -59,3 +60,48 @@ class CheckMobileView(View):
 
         # 2, 返回响应
         return JsonResponse({"count": count, "code": 0})
+
+
+class LoginView(View):
+    def get(self, request):
+        return render(request, 'login.html')
+
+    def post(self,request):
+
+        # 1  获取参数
+        username = request.POST.get('username')
+        pwd = request.POST.get('pwd')
+        remembered = request.POST.get('remembered')
+
+        # 2,校验参数
+        # 2,1 为空校验
+        if not all([username, pwd]):
+            return HttpResponseForbidden("参数不全")
+
+        # 2,2 用户名格式
+        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$', username):
+            return HttpResponseForbidden("用户名格式不对")
+
+        # 2,3 密码格式校验ß
+        if not re.match(r'^[0-9A-Za-z]{8,20}$', pwd):
+            return HttpResponseForbidden("密码格式不对")
+
+        # 2,4 账号密码正确性校验, 如果认证成功返回用户对象, 不成功返回None
+        user = authenticate(request, username=username, password=pwd)
+
+        if not user:
+            return HttpResponseForbidden("账号或者密码不正确")
+
+        if not user:
+            return HttpResponse('账户密码不正确')
+
+        #3 数据入库
+
+        login(request, user)        # 就是将用户的信息存储在session
+        if remembered == "on":
+            request.session.set_expiry(3600*24*2)
+        else:
+            request.session.set_expiry(0)
+        #4 返回响应
+
+        return redirect('/')

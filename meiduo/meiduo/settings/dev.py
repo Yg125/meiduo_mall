@@ -221,3 +221,4 @@ LOGGING = {
         },
     }
 }
+AUTHENTICATION_BACKENDS = ['meiduo.utils.my_authenticate.MyModelBackend']
