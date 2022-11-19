@@ -44,9 +44,18 @@ class Register(View):
 # 2, 判断用户名是否存在
 class CheckUsernameView(View):
     def get(self, request, username):
-
         # 1, 根据用户名查询用户数量
         count = User.objects.filter(username=username).count()
+
+        # 2, 返回响应
+        return JsonResponse({"count": count, "code": 0})
+
+
+# 2, 判断手机号是否存在
+class CheckMobileView(View):
+    def get(self, request, mobile):
+        # 1, 根据用户名查询用户数量
+        count = User.objects.filter(mobile=mobile).count()
 
         # 2, 返回响应
         return JsonResponse({"count": count, "code": 0})
