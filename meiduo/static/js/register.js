@@ -206,7 +206,7 @@ var vm = new Vue({
                         this.generate_image_code();
                         this.sending_flag = false;
                     }
-                })
+                }) 
                 .catch(error => {
                     console.log(error.response);
                     this.sending_flag = false;
