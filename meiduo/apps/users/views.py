@@ -69,7 +69,7 @@ class LoginView(View):
     def get(self, request):
         return render(request, 'login.html')
 
-    def post(self,request):
+    def post(self, request):
 
         # 1  获取参数
         username = request.POST.get('username')
@@ -98,13 +98,14 @@ class LoginView(View):
         if not user:
             return HttpResponse('账户密码不正确')
 
-        #3 数据入库
+        # 3 数据入库
 
-        login(request, user)        # 就是将用户的信息存储在session
+        login(request, user)  # 就是将用户的信息存储在session
         if remembered == "on":
-            request.session.set_expiry(3600*24*2)
+            request.session.set_expiry(3600 * 24 * 2)
         else:
             request.session.set_expiry(0)
-        #4 返回响应
-
-        return redirect('/')
+        # 4 返回响应
+        response = redirect('/')
+        response.set_cookie("username", user.username, max_age=3600 * 24 * 2)  # 设置cookie登陆界面中显示用户名
+        return response
