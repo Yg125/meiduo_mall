@@ -109,3 +109,11 @@ class LoginView(View):
         response = redirect('/')
         response.set_cookie("username", user.username, max_age=3600 * 24 * 2)  # 设置cookie登陆界面中显示用户名
         return response
+
+
+class UserInfoView(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            return render(request, 'user_center_info.html')
+        else:
+            return redirect('/login/')
