@@ -10,6 +10,8 @@ from django.views import View
 from django_redis import get_redis_connection
 
 from libs.captcha.captcha import captcha
+from meiduo.utils import constants
+from meiduo.utils.response_code import RET
 
 
 class ImageCodeView(View):
@@ -18,7 +20,7 @@ class ImageCodeView(View):
         _, text, image_data = captcha.generate_captcha()
         # 2 存储图片验证码于redis
         redis_conn = get_redis_connection("code")
-        redis_conn.set('image_code_%s' % uuid, text, 60)
+        redis_conn.set('image_code_%s' % uuid, text, constants.REDIS_IMAGE_CODE_EXPIRES)
         # 3返回响应
         return HttpResponse(image_data, content_type='image/jpg')
 
@@ -31,22 +33,24 @@ class SMSCodeView(View):
         # 2,校验参数
         # 2,1 为空检验
         if not all([image_code, image_code_id]):
-            return JsonResponse({"code": 4001, "errmsg": "参数不全"})
+            return JsonResponse({"code": RET.PARAMERR, "errmsg": "参数不全"})
 
         # 2,1 手机号格式
         if not re.match(r'^1[3-9]\d{9}$', mobile):
-            return JsonResponse({"code": 4001, "errmsg": "手机号格式有误"})
+            return JsonResponse({"code": RET.DATAERR, "errmsg": "手机号格式有误"})
 
         # 2,2 图片验证码正确性
         redis_conn = get_redis_connection("code")
         redis_image_code = redis_conn.get("image_code_%s" % image_code_id)
+        if not redis_image_code:
+            return JsonResponse({"code": RET.DATAERR, "errmsg": "图片验证码已过期"})
 
-        if image_code != redis_image_code.decode():
-            return JsonResponse({"code": 4001, "errmsg": "图片验证码错误"})
+        if image_code.upper() != redis_image_code.decode().upper():
+            return JsonResponse({"code": RET.DATAERR, "errmsg": "图片验证码错误"})
 
         # 3,发送短信,数据入库
         sms_code = "%06d" % random.randint(0, 999999)  # 生成随机六位数
         print("sms_code = %s" % sms_code)
 
         # 4,返回响应
-        return JsonResponse({"code": 0})
+        return JsonResponse({"code": RET.OK})

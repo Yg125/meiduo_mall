@@ -1,0 +1,4 @@
+# 图片验证码存储有效期
+REDIS_IMAGE_CODE_EXPIRES = 60
+# session和cookie有效期
+REDIS_SESSION_COOKIE_EXPIRES = 3600 * 24 * 2

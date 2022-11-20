@@ -6,6 +6,8 @@ from django.shortcuts import render, redirect
 
 # Create your views here.
 from django.views import View
+
+from meiduo.utils import constants
 from .models import User
 
 
@@ -102,12 +104,12 @@ class LoginView(View):
 
         login(request, user)  # 就是将用户的信息存储在session
         if remembered == "on":
-            request.session.set_expiry(3600 * 24 * 2)
+            request.session.set_expiry(constants.REDIS_SESSION_COOKIE_EXPIRES)
         else:
             request.session.set_expiry(0)
         # 4 返回响应
         response = redirect('/')
-        response.set_cookie("username", user.username, max_age=3600 * 24 * 2)  # 设置cookie登陆界面中显示用户名
+        response.set_cookie("username", user.username, max_age=constants.REDIS_SESSION_COOKIE_EXPIRES)  # 设置cookie登陆界面中显示用户名
         return response
 
 
