@@ -1,8 +1,6 @@
-from django.urls import re_path
-
+from django.conf.urls import url
 from . import views
 
-
 urlpatterns = [
-    re_path(r'^$',views.IndexView.as_view()),
+    url(r'^$',views.IndexView.as_view())
 ]
