@@ -38,6 +38,9 @@ class Register(View):
             return HttpResponseForbidden('协议需要同意')
         # 3. 数据入库
         User.objects.create(username=username, password=pwd, mobile=phone)
+        user = User.objects.get(username=username)
+        user.set_password(pwd)
+        user.save()
         # 4. 返回响应
         return redirect('http://www.taobao.com')
 
