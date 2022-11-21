@@ -13,5 +13,6 @@ urlpatterns = [
     re_path(r'^addresses/create/$', views.AddressesCreateView.as_view()),
     re_path(r'^addresses/(?P<address_id>\d+)/$', views.AddressesUpdateView.as_view()),
     re_path(r'^addresses/(?P<address_id>\d+)/default/$', views.AddressesDefaultView.as_view()),
-    re_path(r'^addresses/(?P<address_id>\d+)/title/$',views.AddressesTitleView.as_view()),
+    re_path(r'^addresses/(?P<address_id>\d+)/title/$', views.AddressesTitleView.as_view()),
+    re_path(r'^password/$', views.UserPassWordView.as_view()),
 ]

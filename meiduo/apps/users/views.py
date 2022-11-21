@@ -2,7 +2,7 @@ import json
 import re
 
 from django.conf import settings
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
@@ -338,3 +338,42 @@ class AddressesTitleView(View):
 
         # 4,返回响应
         return JsonResponse({"code": RET.OK, "errmsg": "修改成功"})
+
+
+# 13, 密码修改
+class UserPassWordView(View):
+    def get(self, request):
+        return render(request, 'user_center_pass.html')
+
+    def post(self, request):
+        # 1,获取参数
+        old_pwd = request.POST.get("old_pwd")
+        new_pwd = request.POST.get("new_pwd")
+        new_cpwd = request.POST.get("new_cpwd")
+
+        # 2,校验参数
+        # 2,1 为空校验
+        if not all([old_pwd, new_pwd, new_cpwd]):
+            return render(request, 'user_center_pass.html')
+
+        # 2,2 两次新密码是否一致
+        if new_pwd != new_cpwd:
+            return render(request, 'user_center_pass.html')
+
+        # 2,2 新旧密码是否一致
+        if old_pwd == new_pwd:
+            return render(request, 'user_center_pass.html')
+
+        # 2,3 旧密码正确性
+        if not request.user.check_password(old_pwd):
+            return render(request, 'user_center_pass.html')
+
+        # 3,数据入库
+        request.user.set_password(new_pwd)
+        request.user.save()
+
+        # 4,返回响应
+        response = redirect('/login')
+        logout(request)  # 清除session
+        response.delete_cookie("username")  # 清除cookie
+        return response
