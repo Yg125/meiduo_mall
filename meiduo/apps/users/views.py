@@ -13,7 +13,7 @@ from django.views import View
 from meiduo.utils import constants
 from meiduo.utils.my_encrypt import generate_verify_url
 from meiduo.utils.response_code import RET
-from .models import User
+from .models import User, Address
 
 
 class Register(View):
@@ -130,7 +130,7 @@ class UserInfoView(View):
                 "email_active": False
             }
 
-        # 2,渲染页面
+            # 2,渲染页面
             return render(request, 'user_center_info.html', context=context)
         else:
             return redirect('/login')
@@ -162,7 +162,179 @@ class EmailView(View):
         return JsonResponse({"code": RET.OK, "errmsg": "发送成功"})
 
 
+# 8, 收货地址
 class AddressesView(View):
-    def get(self,request):
+    def get(self, request):
+        # 1,查询用户的地址
+        # addresses = Address.objects.filter(user_id=request.user.id).all()
+        addresses = request.user.addresses.filter(is_deleted=False).all()
 
-        return render(request,'user_center_site.html')
+        # 2,拼接数据
+        addresses_list = []
+        for address in addresses:
+            address_dict = {
+                "id": address.id,
+                "title": address.title,
+                "receiver": address.receiver,
+                "province": address.province.name,
+                "city": address.city.name,
+                "district": address.district.name,
+                "place": address.place,
+                "mobile": address.mobile,
+                "tel": address.tel,
+                "email": address.email,
+                "province_id": address.province_id,
+                "city_id": address.city_id,
+                "district_id": address.district_id,
+            }
+            addresses_list.append(address_dict)
+
+        context = {
+            "addresses": addresses_list,
+        }
+
+        # 3,渲染页面,携带数据
+        return render(request, 'user_center_site.html', context=context)
+
+
+# 9, 新增地址
+class AddressesCreateView(View):
+    def post(self, request):
+        # 1,获取参数
+        data_dict = json.loads(request.body.decode())
+        title = data_dict.get("title")
+        receiver = data_dict.get("receiver")
+        province_id = data_dict.get("province_id")
+        city_id = data_dict.get("city_id")
+        district_id = data_dict.get("district_id")
+        place = data_dict.get("place")
+        mobile = data_dict.get("mobile")
+        tel = data_dict.get("tel")
+        email = data_dict.get("email")
+
+        # 2,校验参数
+        if not all([title, receiver, province_id, city_id, district_id, place, mobile, tel, email]):
+            return JsonResponse({"code": RET.PARAMERR, "errmsg": "参数不全"})
+
+        # 3,数据入库
+        data_dict["user_id"] = request.user.id  # 手动加入user.id
+        address = Address.objects.create(**data_dict)  # ** 可以把字典key：value拆分
+
+        # 4,返回响应
+        data_dict = {
+            "code": RET.OK,
+            "address": {
+                "id": address.id,
+                "title": address.title,
+                "receiver": address.receiver,
+                "province": address.province.name,
+                "city": address.city.name,
+                "district": address.district.name,
+                "place": address.place,
+                "mobile": address.mobile,
+                "tel": address.tel,
+                "email": address.email,
+                "province_id": address.province_id,
+                "city_id": address.city_id,
+                "district_id": address.district_id,
+            }
+        }
+        return JsonResponse(data_dict)
+
+
+# 10, 修改地址
+class AddressesUpdateView(View):
+    def put(self, request, address_id):
+        # 1,获取参数
+        data_dict = json.loads(request.body.decode())
+        title = data_dict.get("title")
+        receiver = data_dict.get("receiver")
+        province_id = data_dict.get("province_id")
+        city_id = data_dict.get("city_id")
+        district_id = data_dict.get("district_id")
+        place = data_dict.get("place")
+        mobile = data_dict.get("mobile")
+        tel = data_dict.get("tel")
+        email = data_dict.get("email")
+
+        # 2,校验参数
+        if not all([title, receiver, province_id, city_id, district_id, place, mobile, tel, email]):
+            return JsonResponse({"code": RET.PARAMERR, "errmsg": "参数不全"})
+
+        # 3,数据入库,返回的数据是整数,表示修改的行数
+        try:
+            del data_dict["id"]
+            del data_dict["province"]
+            del data_dict["city"]
+            del data_dict["district"]
+            ret = Address.objects.filter(id=address_id).update(**data_dict)
+            address = Address.objects.get(id=address_id)
+        except Exception as e:
+            return JsonResponse({"code": RET.DATAERR, "errmsg": "修改失败"})
+
+        # 4,返回响应
+        data_dict = {
+            "code": RET.OK,
+            "address": {
+                "id": address.id,
+                "title": address.title,
+                "receiver": address.receiver,
+                "province": address.province.name,
+                "city": address.city.name,
+                "district": address.district.name,
+                "place": address.place,
+                "mobile": address.mobile,
+                "tel": address.tel,
+                "email": address.email,
+                "province_id": address.province_id,
+                "city_id": address.city_id,
+                "district_id": address.district_id,
+            }
+        }
+        return JsonResponse(data_dict)
+
+    def delete(self, request, address_id):
+        # 1,数据入库
+        try:
+            ret = Address.objects.filter(id=address_id).update(is_deleted=True)
+        except Exception as e:
+            return JsonResponse({"code": RET.DBERR, "errmsg": "删除失败"})
+
+        # 2,返回响应
+        return JsonResponse({"code": RET.OK, "errmsg": "删除成功"})
+
+    # 11, 设置默认
+
+
+class AddressesDefaultView(View):
+    def put(self, request, address_id):
+
+        # 1,数据入库
+        try:
+            request.user.default_address_id = address_id
+            request.user.save()
+        except Exception as e:
+            return JsonResponse({"code": RET.DBERR, "errmsg": "设置默认失败"})
+
+        # 2,返回响应
+        return JsonResponse({"code": RET.OK, "errmsg": "修改成功"})
+
+
+# 12, 标题修改
+class AddressesTitleView(View):
+    def put(self, request, address_id):
+        # 1,获取参数
+        title = json.loads(request.body.decode()).get("title")
+
+        # 2,校验参数
+        if not title:
+            return JsonResponse({"code": RET.PARAMERR, "errmsg": "参数不全"})
+
+        # 3,数据入库
+        try:
+            Address.objects.filter(id=address_id).update(title=title)
+        except Exception as e:
+            return JsonResponse({"code": RET.DBERR, "errmsg": "修改失败"})
+
+        # 4,返回响应
+        return JsonResponse({"code": RET.OK, "errmsg": "修改成功"})
