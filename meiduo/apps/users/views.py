@@ -135,7 +135,7 @@ class UserInfoView(View):
         else:
             return redirect('/login')
 
-# 6, 发送邮件
+
 class EmailView(View):
     def put(self, request):
         # 1, 获取参数
@@ -160,3 +160,9 @@ class EmailView(View):
 
         # 4, 返回响应
         return JsonResponse({"code": RET.OK, "errmsg": "发送成功"})
+
+
+class AddressesView(View):
+    def get(self,request):
+
+        return render(request,'user_center_site.html')
