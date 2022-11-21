@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users.apps.UsersConfig',
     'verifications',
-    'apps.areas.apps.AreasConfig',
+    'areas.apps.AreasConfig',
 ]
 
 MIDDLEWARE = [

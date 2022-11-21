@@ -98,7 +98,8 @@ var vm = new Vue({
                         this.provinces = [];
                     }
                 })
-                .catch(error => {
+                .catch
+                (error => {
                     console.log(error.response);
                     this.provinces = [];
                 });
